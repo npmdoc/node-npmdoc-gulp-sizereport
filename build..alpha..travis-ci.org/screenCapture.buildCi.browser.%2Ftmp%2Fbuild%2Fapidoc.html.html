@@ -1,0 +1,314 @@
+<html><head></head><body><div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a href="https://github.com/jaysalvat/gulp-sizereport#readme">gulp-sizereport (v1.2.0)</a>
+</h1>
+<h4>Display the size and gzipped size of your project, trigger alarm when file size is higher as expected</h4>
+<div class="apidocSectionDiv"><a href="#apidoc.tableOfContents" id="apidoc.tableOfContents"><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.gulp-sizereport">module gulp-sizereport</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.gulp-sizereport.gulp-sizereport">
+            function <span class="apidocSignatureSpan"></span>gulp-sizereport
+            <span class="apidocSignatureSpan">(options)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.gulp-sizereport.toString">
+            function <span class="apidocSignatureSpan">gulp-sizereport.</span>toString
+            <span class="apidocSignatureSpan">()</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.gulp-sizereport.toString">module gulp-sizereport.toString</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.gulp-sizereport.toString.toString">
+            function <span class="apidocSignatureSpan">gulp-sizereport.</span>toString
+            <span class="apidocSignatureSpan">()</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.gulp-sizereport" id="apidoc.module.gulp-sizereport">module gulp-sizereport</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.gulp-sizereport.gulp-sizereport" id="apidoc.element.gulp-sizereport.gulp-sizereport">
+        function <span class="apidocSignatureSpan"></span>gulp-sizereport
+        <span class="apidocSignatureSpan">(options)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">gulp-sizereport = function (options) {
+    "use strict";
+
+    options          = options || {};
+    options.gzip     = (options.gzip     !== undefined) ? options.gzip     : false;
+    options.minifier = (options.minifier !== undefined) ? options.minifier : null;
+    options.total    = (options.total    !== undefined) ? options.total    : true;
+
+    var tableHeadCols = [
+        'File',
+        'Original'
+    ];
+
+    if (options.gzip) {
+        tableHeadCols.push('Gzipped');
+    }
+
+    if (options.minifier) {
+        tableHeadCols.push('Minified');
+
+        if (options.gzip) {
+            tableHeadCols.push('Gzipped');
+        }
+    }
+
+    var fileCount = 0,
+        totalSize = 0,
+        totalGzippedSize = 0,
+        totalMinifiedSize = 0,
+        totalMinifiedGzippedSize = 0,
+        gzippedSize,
+        minifiedGzippedSize,
+        minified,
+        table = new Table({
+            head:      tableHeadCols,
+            //colWidths: [ 30, 12, 12, 12, 12 ],
+            colAligns: [ 'left', 'right', 'right', 'right', 'right' ],
+            style: {
+                head:  [ 'cyan' ]
+            }
+        });
+
+    var getSizeToDisplay = function (size, key, filename) {
+        var max = options[filename] || options['*'],
+            value;
+
+        if (max) {
+            value = max[key];
+        } else {
+            value = options[key];
+        }
+
+        if (value &amp;&amp; size &gt; value) {
+            gutil.beep();
+
+            return gutil.colors.red(prettyBytes(size));
+        }
+
+        return prettyBytes(size);
+    };
+
+    return through.obj(function (file, enc, callback) {
+        if (file.isNull()) {
+            callback(null, file);
+            return;
+        }
+
+        if (file.isStream()) {
+            callback(new gutil.PluginError('gulp-size', 'Streaming not supported'));
+            return;
+        }
+
+        gzippedSize       = gzipSize.sync(file.contents);
+        totalSize        += file.contents.length;
+        totalGzippedSize += gzippedSize;
+        fileCount ++;
+
+        var row = [
+            file.relative,
+            getSizeToDisplay(file.contents.length, 'maxSize', file.relative)
+        ];
+
+        if (options.gzip) {
+            row.push(getSizeToDisplay(gzippedSize, 'maxGzippedSize', file.relative));
+        }
+
+        if (typeof options.minifier === 'function') {
+            minified           = options.minifier('' + file.contents, file.relative);
+            totalMinifiedSize += minified.length;
+
+            row.push(getSizeToDisplay(minified.length, 'maxMinifiedSize', file.relative));
+
+            if (options.gzip) {
+                minifiedGzippedSize       = gzipSize.sync(minified);
+                totalMinifiedGzippedSize += minifiedGzippedSize;
+                row.push(getSizeToDisplay(minifiedGzippedSize, 'maxMinifiedGzippedSize', file.relative));
+            }
+        }
+        table.push(row);
+
+        callback(null, file);
+
+    }, function (callback) {
+
+        if (options.title) {
+            console.log(':: ' + gutil.colors.bold(options.title) + ' ::');
+        }
+
+        if (fileCount &gt; 0) {
+            if (options.total === true) {
+                var row = [
+                    '',
+                    gutil.colors.bold(getSizeToDisplay(totalSize, 'maxTotalSize', '*'))
+                ];
+
+                if (options.gzip) {
+                    row.push(gutil.colors.bold(getSizeToDisplay(totalGzippedSize, 'maxTotalGzippedSize', '*')));
+                }
+
+                if (options.minifier) {
+                    row.push(gutil.colors.bold(getSizeToDisplay(totalMinifiedSize, 'maxTotalMinifiedSize', '*')));
+
+                    if (options.gzip) {
+                        row.push(gutil.colors.bold(getSizeToDisplay(totalMinifiedGzippedSize, 'maxTotalMinifiedGzippedSize', '*')));
+                    }
+                }
+
+                table.push(row);
+            }
+
+            console.log(table.toString());
+        }
+
+        callback();
+    });
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.gulp-sizereport.toString" id="apidoc.element.gulp-sizereport.toString">
+        function <span class="apidocSignatureSpan">gulp-sizereport.</span>toString
+        <span class="apidocSignatureSpan">()</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">toString = function () {
+    return text;
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+                        row.push(gutil.colors.bold(getSizeToDisplay(totalMinifiedGzippedSize, 'maxTotalMinifiedGzippedSize&amp;#
+x27;, '*')));
+                    }
+                }
+
+                table.push(row);
+            }
+
+            console.log(table.<span class="apidocCodeKeywordSpan">toString</span>());
+        }
+
+        callback();
+    });
+};
+...</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.gulp-sizereport.toString" id="apidoc.module.gulp-sizereport.toString">module gulp-sizereport.toString</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.gulp-sizereport.toString.toString" id="apidoc.element.gulp-sizereport.toString.toString">
+        function <span class="apidocSignatureSpan">gulp-sizereport.</span>toString
+        <span class="apidocSignatureSpan">()</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function toString() { [native code] }</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+                        row.push(gutil.colors.bold(getSizeToDisplay(totalMinifiedGzippedSize, 'maxTotalMinifiedGzippedSize&amp;#
+x27;, '*')));
+                    }
+                }
+
+                table.push(row);
+            }
+
+            console.log(table.<span class="apidocCodeKeywordSpan">toString</span>());
+        }
+
+        callback();
+    });
+};
+...</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
+</body></html>
