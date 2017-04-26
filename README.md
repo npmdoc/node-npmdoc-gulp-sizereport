@@ -1,4 +1,7 @@
-# api documentation for  [gulp-sizereport (v1.2.0)](https://github.com/jaysalvat/gulp-sizereport#readme)  [![npm package](https://img.shields.io/npm/v/npmdoc-gulp-sizereport.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-gulp-sizereport) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-gulp-sizereport.svg)](https://travis-ci.org/npmdoc/node-npmdoc-gulp-sizereport)
+# npmdoc-gulp-sizereport
+
+#### basic api documentation for  [gulp-sizereport (v1.2.0)](https://github.com/jaysalvat/gulp-sizereport#readme)  [![npm package](https://img.shields.io/npm/v/npmdoc-gulp-sizereport.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-gulp-sizereport) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-gulp-sizereport.svg)](https://travis-ci.org/npmdoc/node-npmdoc-gulp-sizereport)
+
 #### Display the size and gzipped size of your project, trigger alarm when file size is higher as expected
 
 [![NPM](https://nodei.co/npm/gulp-sizereport.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/gulp-sizereport)
@@ -72,7 +75,8 @@
         "url": "git+https://github.com/jaysalvat/gulp-sizereport.git"
     },
     "scripts": {},
-    "version": "1.2.0"
+    "version": "1.2.0",
+    "bin": {}
 }
 ```
 
